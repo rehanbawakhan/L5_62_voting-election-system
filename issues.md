@@ -33,6 +33,6 @@ Line numbers refer to the **original** file (commit `c6f385e`). Ordered by sever
 
 ## Commits
 
-1. `b057412` – Fix Bandit security issues
-2. `e6cbbab` – Fix Pylint issues and logic bugs (5.33 -> 10.00/10)
-3. Fix Flake8 style issues (see `git log`)
+1. `13dfc47` – Fix Bandit security issues
+2. `0261ffa` – Fix Pylint issues and logic bugs (5.33 -> 10.00/10)
+3. `94fe10d` – Fix Flake8 style issues (30 -> 0 violations)
