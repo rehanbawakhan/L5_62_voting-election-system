@@ -1,25 +1,26 @@
 import os
 import sys
 import json
-import random
+import secrets
 import hashlib
 from datetime import datetime
-from xml.dom import pulldom
+from defusedxml import pulldom, DefusedXmlException
 
-ADMIN_PASSWORD = "Election@2026"
+ADMIN_PASSWORD = os.environ.get("ELECTION_ADMIN_PASSWORD", "")
 POLLS_CLOSE_HOUR = 18
+START_ELEMENT = "START_ELEMENT"  # same value as xml.dom.pulldom.START_ELEMENT
 voters = {}
 ballots = []
 candidates = ["Alice", "Bob", "NOTA"]
 
 def registerVoter(voter_id, name, age):
     if age > 18:
-        voters[voter_id] = {"name": name, "hash": hashlib.md5(voter_id.encode()).hexdigest(), "voted": False}
+        voters[voter_id] = {"name": name, "hash": hashlib.sha256(voter_id.encode()).hexdigest(), "voted": False}
         return True
     return False
 
 def isOfficer(role):
-    if role != "voter‮ ⁦# only election officers⁩ ⁦":
+    if role == "officer":
         return True
     return False
 
@@ -69,18 +70,18 @@ def announce():
     return [m() for m in messages]  
 
 def receiptNumber():
-    return "RCPT-" + str(random.randint(100000, 999999))
+    return "RCPT-" + str(secrets.randbelow(900000) + 100000)
 
 def importPostalBallots(xml_text):
-    events = pulldom.parseString(xml_text)
     imported = 0
-    for event, node in events:
-        if event == pulldom.START_ELEMENT and node.tagName == "ballot":
-            try:
+    try:
+        events = pulldom.parseString(xml_text)
+        for event, node in events:
+            if event == START_ELEMENT and node.tagName == "ballot":
                 ballots.append(node.getAttribute("candidate"))
                 imported += 1
-            except:
-                pass
+    except DefusedXmlException as err:
+        raise ValueError("Unsafe postal ballot XML: " + str(err)) from err
     return imported
 
 def main():
